@@ -1,9 +1,14 @@
 import 'dart:ui';
 
+import 'package:eshopflutter/dummy_data.dart';
+import 'package:eshopflutter/widgets/categories_row.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:eshopflutter/widgets/carousel.dart';
 import 'package:flutter/services.dart';
+
+import 'package:eshopflutter/widgets/top_appbar.dart';
 
 void main() {
   runApp(MyApp());
@@ -37,82 +42,113 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Column(
-          children: <Widget>[
-            Stack(
-              children: <Widget>[
-                ClipPath(
-                  clipper: MyClipper(),
-                  child: Container(
-                    width: double.infinity,
-                    height: 300, //Dimensione stack di base
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(
-                            'https://dpv87w1mllzh1.cloudfront.net/alitalia_discover/attachments/data/000/000/334/original/roma-how-to-carbonara-1920x1080.jpg?1519055920'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        color: Colors.white.withOpacity(0),
-                      ),
-                    ),
-                  ),
-                ),
-                Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 5,
-                        left: 10,
-                        right: 5,
-                      ),
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: TextField(
-                              style: TextStyle(color: Colors.white70),
-                              onSubmitted: (value) {},
-                              decoration: InputDecoration(
-                                fillColor: Color(0xBF111111),
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                                hintText: 'Search',
-                                hintStyle: TextStyle(color: Colors.white30),
-                                prefixIcon: IconButton(
-                                  icon: Icon(Icons.search),
-                                  color: Colors.white70,
-                                  onPressed: () {},
-                                ),
-                              ),
+        body: ScrollViewPersonale(),
+      ),
+    );
+  }
+}
+
+class ProductCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.lightBlueAccent,
+        ),
+        height: MediaQuery.of(context).size.width / 2 - 20,
+        width: MediaQuery.of(context).size.height / 100 * 25,
+        child: Text('ProductCard'),
+      ),
+    );
+  }
+}
+
+class ScrollViewPersonale extends StatefulWidget {
+  @override
+  _ScrollViewPersonaleState createState() => _ScrollViewPersonaleState();
+}
+
+class _ScrollViewPersonaleState extends State<ScrollViewPersonale> {
+  List<int> listaDiProva = [1, 2, 3, 4, 5];
+  ScrollController _myController = ScrollController();
+  double _appBarOpacity = 0;
+
+  _scrollListener() {
+//    print(_myController.offset);
+    setState(() {
+      _appBarOpacity = _myController.offset / 50;
+      if (_appBarOpacity > 1) _appBarOpacity = 1;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _myController.addListener(_scrollListener);
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      child: CustomScrollView(
+        controller: _myController,
+        slivers: <Widget>[
+          SliverAppBar(
+            elevation: 0,
+            backgroundColor: Colors.orange.withOpacity(_appBarOpacity),
+            pinned: true,
+            flexibleSpace: TopAppBar(),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                if (index == 0) {
+                  return Stack(
+                    children: <Widget>[
+                      ClipPath(
+                        clipper: MyClipper(),
+                        child: Container(
+                          width: double.infinity,
+                          height: 200, //Dimensione stack di base
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(
+                                  'https://dpv87w1mllzh1.cloudfront.net/alitalia_discover/attachments/data/000/000/334/original/roma-how-to-carbonara-1920x1080.jpg?1519055920'),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.menu),
-                            color: Colors.black87,
-                            onPressed: () {},
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              color: Colors.white.withOpacity(0),
+                            ),
                           ),
+                        ),
+                      ),
+                      Column(
+                        children: <Widget>[
+//                          SizedBox(
+//                            height: 30,
+//                            width: MediaQuery.of(context).size.width,
+//                          ),
+                          CarouselWithIndicator(listaDiProva: listaDiProva),
                         ],
                       ),
-                    ),
-                    SizedBox(
-                      height: 5,
-                      width: MediaQuery.of(context).size.width,
-                    ),
-                    CarouselWithIndicator(listaDiProva: listaDiProva),
-                  ],
-                ),
-              ],
+                    ],
+                  );
+                } else {
+                  return Container(
+                    height: 40,
+                    alignment: Alignment.center,
+                    color: Colors.teal[100 * (index % 9)],
+                    child: Text('List Item $index'),
+                  );
+                }
+              },
+              childCount: 50,
             ),
-            SizedBox(height: 5),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -134,86 +170,65 @@ class MyClipper extends CustomClipper<Path> {
     return false;
   }
 }
-
-class CarouselSliderFunzionante extends StatelessWidget {
-  const CarouselSliderFunzionante({
-    Key key,
-    @required this.listProva,
-  }) : super(key: key);
-
-  final List<int> listProva;
-
-  @override
-  Widget build(BuildContext context) {
-    return CarouselSlider(
-      items: listProva.map((i) {
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          margin: EdgeInsets.symmetric(horizontal: 5.0),
-          decoration: BoxDecoration(color: Colors.amber),
-          child: Text(
-            'text $i',
-            style: TextStyle(fontSize: 16),
-          ),
-        );
-      }).toList(),
-      options: CarouselOptions(
-        height: 400.0,
-        autoPlay: true,
-        autoPlayInterval: Duration(milliseconds: 3000),
-        autoPlayAnimationDuration: Duration(milliseconds: 750),
-      ),
-    );
-  }
-}
-
-//Padding(
-//padding: const EdgeInsets.only(
-//top: 5,
-//left: 10,
-//right: 5,
-//),
-//child: Row(
+//
+//Scaffold(
+//body: SingleChildScrollView(
+//child: Column(
 //children: <Widget>[
-//Expanded(
-//child: TextField(
-//style: TextStyle(color: Colors.white70),
-//onSubmitted: (value) {},
-//decoration: InputDecoration(
-//fillColor: Color(0xBF111111),
-//filled: true,
-//border: OutlineInputBorder(
-//borderRadius: BorderRadius.circular(10),
-//borderSide: BorderSide.none,
-//),
-//contentPadding: EdgeInsets.symmetric(horizontal: 10),
-//hintText: 'Search',
-//hintStyle: TextStyle(color: Colors.white30),
-//prefixIcon: IconButton(
-//icon: Icon(Icons.search),
-//color: Colors.white70,
-//onPressed: () {},
+//Stack(
+//children: <Widget>[
+//ClipPath(
+//clipper: MyClipper(),
+//child: Container(
+//width: double.infinity,
+//height: 300, //Dimensione stack di base
+//decoration: BoxDecoration(
+//image: DecorationImage(
+//image: NetworkImage(
+//'https://dpv87w1mllzh1.cloudfront.net/alitalia_discover/attachments/data/000/000/334/original/roma-how-to-carbonara-1920x1080.jpg?1519055920'),
+//fit: BoxFit.cover,
 //),
 //),
+//child: BackdropFilter(
+//filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+//child: Container(
+//color: Colors.white.withOpacity(0),
 //),
 //),
-//IconButton(
-//icon: Icon(Icons.menu),
-//color: Colors.black87,
-//onPressed: () {},
-//),
-//],
 //),
 //),
+//Column(
+//children: <Widget>[
+//TopAppBar(),
 //SizedBox(
 //height: 5,
 //width: MediaQuery.of(context).size.width,
 //),
-//Container(
-//padding: const EdgeInsets.only(
-//top: 5,
-//left: 5,
-//right: 5,
+//CarouselWithIndicator(listaDiProva: listaDiProva),
+//],
 //),
-//child: CarouselWithIndicator(listaDiProva: listaDiProva),
+//],
 //),
+//CategoryRow(DUMMY_DATA),
+////              Container(
+////                height: 400,
+////                child: GridView.count(
+////                  crossAxisCount: 2,
+////                  children: <Widget>[
+////                    ProductCard(),
+////                    ProductCard(),
+////                    ProductCard(),
+////                    ProductCard(),
+////                    ProductCard(),
+////                    ProductCard(),
+////                    ProductCard(),
+////                    ProductCard(),
+////                  ],
+////                ),
+////              ),
+//ScrollViewPersonale(),
+////            ProductCard(),
+//],
+//),
+//),
+//)
