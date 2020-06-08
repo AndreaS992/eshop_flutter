@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:math';
 
 import 'package:eshopflutter/dummy_data.dart';
 import 'package:eshopflutter/widgets/categories_row.dart';
@@ -42,6 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         body: ScrollViewPersonale(),
       ),
     );
@@ -74,20 +76,34 @@ class ScrollViewPersonale extends StatefulWidget {
 
 class _ScrollViewPersonaleState extends State<ScrollViewPersonale> {
   List<int> listaDiProva = [1, 2, 3, 4, 5];
-  ScrollController _myController = ScrollController();
+  ScrollController _myController = ScrollController(initialScrollOffset: 55);
   double _appBarOpacity = 0;
 
   _scrollListener() {
 //    print(_myController.offset);
-    setState(() {
-      _appBarOpacity = _myController.offset / 50;
-      if (_appBarOpacity > 1) _appBarOpacity = 1;
-    });
+//    _myController.jumpTo(55);
+    var tempOffset = _myController.offset;
+    var percentuale;
+
+    if (tempOffset >= 120) {
+      percentuale = double.parse(((tempOffset - 120) / 150).toStringAsFixed(1));
+
+      if (((_appBarOpacity - percentuale).abs() > 0.1) && (percentuale <= 1)) {
+        _appBarOpacity = double.parse(percentuale.toStringAsFixed(1));
+        setState(() {
+          _appBarOpacity = _appBarOpacity;
+        });
+      }
+    }
+    if (_myController.offset < 55) {
+      _myController.jumpTo(55);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     _myController.addListener(_scrollListener);
+
     return Container(
       height: MediaQuery.of(context).size.height,
       child: CustomScrollView(
@@ -105,6 +121,11 @@ class _ScrollViewPersonaleState extends State<ScrollViewPersonale> {
                 if (index == 0) {
                   return Stack(
                     children: <Widget>[
+                      Container(
+                        height: 300,
+                        width: double.infinity,
+                        color: Colors.lightBlueAccent,
+                      ),
                       ClipPath(
                         clipper: MyClipper(),
                         child: Container(
@@ -125,14 +146,10 @@ class _ScrollViewPersonaleState extends State<ScrollViewPersonale> {
                           ),
                         ),
                       ),
-                      Column(
-                        children: <Widget>[
-//                          SizedBox(
-//                            height: 30,
-//                            width: MediaQuery.of(context).size.width,
-//                          ),
-                          CarouselWithIndicator(listaDiProva: listaDiProva),
-                        ],
+                      Positioned(
+                        width: MediaQuery.of(context).size.width,
+                        top: 55,
+                        child: CarouselWithIndicator(listaDiProva: listaDiProva),
                       ),
                     ],
                   );
